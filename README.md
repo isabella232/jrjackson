@@ -2,58 +2,101 @@ LICENSE applicable to this library:
 
 Apache License 2.0 see http://www.apache.org/licenses/LICENSE-2.0
 
-Jrjackson:
+### JrJackson:
 
-a jruby library wrapping the JAVA jackson jars
+a jruby library wrapping the JAVA Jackson jars`
 
-Version: 0.0.9
+Version: 0.2.1
 
-NOTE: Smile support has been temporarily dropped
+__NOTE:__ Smile support has been temporarily dropped
 
 The code has been refactored to use almost all Java.
 
-There is shortly to be a MultiJson adapter added for JrJackson
+There is now a MultiJson adapter added for JrJackson
 
-provides:
+***
+
+#### API
 
 ```
-JrJackson::Json.load(str, options) -> hash like object
-  aliased as parse
-JrJackson::Json.dump(obj) -> json string
-  aliased as generate
+JrJackson::Json.load(string, options) -> hash like object
+      aliased as parse
 ```
-
 By default the load method will return Ruby objects (Hashes have string keys).
-The options hash respects two symbol keys
-  :symbolize_keys
-    Will return symbol keys in hashes
-  :raw
-    Will return JRuby wrapped java objects that quack like ruby objects
-    This is the fastest option
+The options hash respects three symbol keys
 
-Behind the scenes there are three Ruby sub modules of the JrJackson module
-```
-  JrJackson::Str
-  JrJackson::Sym
-  JrJackson::Raw
++ :symbolize_keys
 
-  These all have the same method signatures - they map to different java classes
-  that parse appropriately
+  Will return symbol keys in hashes
+
++ :raw
+
+  Will return JRuby wrapped java objects that quack like ruby objects
+  This is the fastest option
+
++ :use_bigdecimal
+
+  Will return BigDecimal objects instead of Float
+  If used with the :raw option you will get Java::JavaMath::BigDecimal objects
+  otherwise they are Ruby BigDecimal
+
 ```
+JrJackson::Json.dump(obj) -> json string
+      aliased as generate
+```
+The dump method expects that the values of hashes or arrays are JSON data types,
+the only exception to this is Ruby Symbol as values, they are converted to java strings
+during serialization. __NOTE:__ All other objects should be converted to JSON data types before
+serialization. See the wiki for more on this.
+
+***
+
+#### Internals
+
+There are two Ruby sub modules of the JrJackson module
+
+```JrJackson::Json```, this is the general external facade used by MultiJson, and is pure Ruby.
+
+```JrJackson::Raw```, this is used by the Json module, it is defined in Java with annotations
+exposing it as a Ruby module with module methods.
+
+***
+
+#### Benchmarks
 
 Credit to Chuck Remes for the benchmark and initial
 investigation when the jruby, json gem and the jackson
 libraries were young.
 
-I compared Json (java) 1.7.7, Gson 0.6.1 and jackson 2.1.4 on jruby 1.7.3 and Java 7
+I compared Json (java) 1.8, Gson 0.6.1 and jackson 2.2.3 on jruby 1.7.4 and OpenJDK 64-Bit Server VM 1.7.0_21-b02
+All the benchmarks were run separately. A 727.9KB string of random json data is read from a file and handled 250 times, thereby attempting to balance invocation and parsing benchmarking.
+
 ```
-                                         user     system      total        real
-ruby parse:                         10.300000   0.020000  10.320000 ( 10.014000)
-gson parse:                         11.270000   0.010000  11.280000 ( 10.958000)
-jrjackson parse raw:                 4.840000   0.080000   4.920000 (  3.767000)
-jrjackson parse symbol keys:         5.130000   0.010000   5.140000 (  4.975000)
-jrjackson parse string keys:         7.370000   0.010000   7.380000 (  7.223000)
-ruby generate:                      13.590000   0.050000  13.640000 ( 12.815000)
-gson generate:                       5.080000   0.010000   5.090000 (  4.949000)
-jackson generate:                    4.640000   0.010000   4.650000 (  4.560000)
+generation/serialize
+
+                                         user     system      total         real
+json mri generate: 250                  12.02       0.00      12.02     ( 12.022)
+oj mri generate: 250                     7.18       0.00       7.18     (  7.183)
+json java generate: 250                  7.83       0.01       7.84     (  7.289)
+gson generate: 250                       5.44       0.00       5.44     (  5.387)
+jackson generate: 250                    5.32       0.00       5.32     (  5.146)
+
+parsing/deserialize - after jrjackson parsing profiling
+
+                                         user     system      total         real
+json mri parse: 250                      8.35       0.02       8.37     (  8.366)
+oj mri parse: 250                        6.10       0.13       6.23     (  7.527)
+
+gson parse: 250                         12.02       0.02      12.04     ( 11.774)
+json java parse: 250                    10.35       0.01      10.36     ( 10.204)
+jackson parse string keys: 250           6.27       0.02       6.29     (  6.010)
+jackson parse string + bigdecimal: 250   6.27       0.00       6.27     (  5.973)
+jackson parse symbol keys: 250           5.16       0.00       5.16     (  4.873)
+jackson parse symbol + bigdecimal: 250   4.75       0.06       4.81     (  4.461)
+jackson parse raw: 250                   3.23       0.05       3.28     (  3.021)
+jackson parse raw + bigdecimal: 250      3.06       0.06       3.12     (  2.681)
+
 ```
+
+
+

@@ -5,10 +5,10 @@
   <groupId>com.jrjackson.jruby</groupId>
   <artifactId>jrjackson</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.2.3</version>
   <name>jrjackson</name>
   <url>http://maven.apache.org</url>
-
+  
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -23,22 +23,27 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby</artifactId>
-      <version>1.7.3</version>
+      <version>1.7.4</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.1.4</version>
+      <version>2.2.3</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>2.1.4</version>
+      <version>2.2.3</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.1.4</version>
+      <version>2.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-afterburner</artifactId>
+      <version>2.2.3</version>
     </dependency>
   </dependencies>
   <build>
@@ -46,16 +51,20 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.0</version>
+          <version>3.1</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
+            <showDeprecation>false</showDeprecation>
+            <showWarnings>false</showWarnings>
+            <executable>${JAVA_HOME_6}/bin/javac</executable>
+            <fork>true</fork>
           </configuration>
         </plugin>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.12.2</version>
+            <version>2.16</version>
             <configuration>
                 <parallel>methods</parallel>
                 <threadCount>10</threadCount>
@@ -64,7 +73,7 @@
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>1.6</version>
+            <version>2.1</version>
             <executions>
                 <execution>
                     <phase>package</phase>
